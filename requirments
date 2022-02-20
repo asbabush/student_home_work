@@ -3,3 +3,4 @@ pre-commit
 numpy
 pandas
 matplotlib
+memory_profiler
