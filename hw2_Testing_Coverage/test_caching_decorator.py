@@ -21,11 +21,9 @@ my_sum(123, 127)
 
 
 def test_caching_decorator_use_dict():
-    assert cache_dict['fibonacci + (6,)  {}'] == 8
+    assert cache_dict["fibonacci + (6,)  {}"] == 8
 
 
 def test_caching_decorator_not_use_dict():
     with pytest.raises(KeyError):
-        test_var = cache_dict['my_sum + (123, 127)  {}']
-
-
+        test_var = cache_dict["my_sum + (123, 127)  {}"]

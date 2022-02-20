@@ -25,4 +25,3 @@ def caching_decorator(use_cache=True):
         return wrapper
 
     return my_use_cache
-
