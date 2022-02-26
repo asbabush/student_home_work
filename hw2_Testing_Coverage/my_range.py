@@ -41,6 +41,8 @@ class my_range:
             self.start = start
             self.stop = stop
         self.step = step
+        if step == 0:
+            raise ValueError("my_range() arg 3 must not be zero")
 
     def __iter__(self):
         return self
@@ -58,5 +60,3 @@ class my_range:
             value = self.start
             self.start += self.step
             return value
-        else:
-            raise ValueError("my_range() arg 3 must not be zero")

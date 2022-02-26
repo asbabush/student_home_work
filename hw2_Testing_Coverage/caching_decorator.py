@@ -15,10 +15,11 @@ def caching_decorator(use_cache=True):
     def my_use_cache(func):
         def wrapper(*args, **kwargs):
             if use_cache:
-                if f"{func.__name__} + {args}  {kwargs}" in cache_dict:
-                    return cache_dict[f"{func.__name__} + {args}  {kwargs}"]
-                cache_dict[f"{func.__name__} + {args}  {kwargs}"] = func(*args, **kwargs)
-                return cache_dict[f"{func.__name__} + {args}  {kwargs}"]
+                key = f"{func.__name__} + {args}  {kwargs}"
+                if key in cache_dict:
+                    return cache_dict[key]
+                cache_dict[key] = func(*args, **kwargs)
+                return cache_dict[key]
 
             return func(*args, **kwargs)
 

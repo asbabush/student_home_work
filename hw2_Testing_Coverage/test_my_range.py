@@ -30,4 +30,4 @@ def test_my_range_type_error():
 
 def test_my_range_value_error():
     with pytest.raises(ValueError):
-        list(my_range(0, 10, 0))
+        my_range(0, 10, 0)
