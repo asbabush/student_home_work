@@ -1,9 +1,10 @@
 import argparse
+import concurrent.futures
 import os
 import threading
 
-from compress_file import compress_file
-from files_naming import file_naming
+import requests
+from PIL import Image
 
 parser = argparse.ArgumentParser(description="Download images and change size")
 parser.add_argument("url_list", type=str, help="Url list for download images")
@@ -12,34 +13,67 @@ parser.add_argument("--threads", type=int, default=1, help="Number of threads (d
 parser.add_argument("--size", type=str, default="100x100", help="Size images (default: 100x100)")
 args = parser.parse_args()
 
-
-with open(args.url_list, "r") as url_list:
-    url_list = list(map(lambda s: s.rstrip("\n"), url_list))
-
-start_dir = os.getcwd()  # save start directory
-if os.path.isdir(args.dir):  # check existence directory
-    os.chdir(args.dir)
-else:
-    os.mkdir(args.dir)
-    os.chdir(args.dir)
-
-count_error = 0
-count_complete = 0
-download_bite = 0
-print("download and compress started")
-print()
+thread_local = threading.local()
 
 
-for index, line in enumerate(url_list):
-    try:
-        threading.Thread(target=compress_file, args=(file_naming(index), line, args.size)).run()
-        print("saving image from", line, "completed")
-        count_complete += 1
-    except Exception:
-        print("saving image from", line, "failed")
-        count_error += 1
-print()
-print("Count complete:", count_complete)
-print("Count error:", count_error)
-print("Download bite:", download_bite)
-os.chdir(start_dir)  # go to start directory
+def file_naming(index):
+    index = str(index)
+    file_name_0 = "00000"
+    file_name_out = file_name_0[: -(len(index))] + index + ".jpg"
+    return file_name_out
+
+
+def get_session():
+    if not hasattr(thread_local, "session"):
+        thread_local.session = requests.Session()
+    return thread_local.session
+
+
+def download_image(url: str, name: str, size_jpg: str):
+    session = get_session()
+    size_jpg = tuple(int(i) for i in size_jpg.split("x"))
+    global cont_error, cont_complete, count_size
+    with session.get(url, stream=True).raw as response:
+        try:
+            image = Image.open(response)
+            compress_image = image.resize(size_jpg)
+            compress_image.save(name, "jpeg")
+            print(f"saving image {os.path.getsize(name)} bait from {url} completed")
+            cont_complete += 1
+            count_size += os.path.getsize(name)
+        except Exception as e:
+            print(f"saving image from {url} failed. Because: ", e)
+            cont_error += 1
+
+
+def download_all_image(sites: list, name: list, size_image: list):
+    with concurrent.futures.ThreadPoolExecutor(max_workers=args.threads) as executor:
+        executor.map(download_image, sites, name, size_image)
+
+
+if __name__ == "__main__":
+    with open(args.url_list, "r") as url_list:
+        url_list = list(map(lambda s: s.rstrip("\n"), url_list))
+
+    naming_jpg = list(map(file_naming, [i for i in range(0, len(url_list))]))
+    size = [args.size for i in range(0, len(url_list))]
+
+    cont_error = 0
+    cont_complete = 0
+    count_size = 0
+
+    start_dir = os.getcwd()  # save start directory
+    if os.path.isdir(args.dir):  # check existence directory
+        os.chdir(args.dir)
+    else:
+        os.mkdir(args.dir)
+        os.chdir(args.dir)
+
+    print("\ndownload and compress started\n")
+
+    download_all_image(url_list, naming_jpg, size)
+
+    print("\nCount complete:", cont_complete)
+    print("Count error:", cont_error)
+    print("total downloads:", count_size, "bytes\n")
+    os.chdir(start_dir)  # go to start directory
