@@ -2,6 +2,8 @@ import argparse
 import os
 from datetime import datetime
 
+list_file = os.listdir()
+
 
 def convert_date(timestamp):
     """Function for converting date and time in user friendly view"""
@@ -10,40 +12,26 @@ def convert_date(timestamp):
     return formated_date
 
 
-def my_ls():
-    """Function to show directories and files, not including hidden ones"""
-    list_file = os.listdir()
-    for i in list_file:
-        if "." not in i[0]:
-            print(i)
-    print()
-
-
-def my_ls_a():
-    """Function to show directories and files, including hidden ones"""
-    list_file = os.listdir()
-    for i in list_file:
-        print(i)
-    print()
-
-
-def my_ls_l():
+def my_ls_l(list_for_print):
     """Function to show directories and files, including hidden ones with showing
     mode, length, last write time, and name"""
-    list_file = os.listdir()
-    print(
-        "{:10}  ".format("Mode"),
-        "{:10}  ".format("Length"),
-        "{:18}  ".format("LastWriteTime"),
-        "{:10}  ".format("Name"),
-    )
-    print(
-        "{:10}  ".format("--------"),
-        "{:10}  ".format("--------"),
-        "{:18}  ".format("--------"),
-        "{:10}  ".format("--------"),
-    )
+    max_len_name = 20
     for i in list_file:
+        if len(i) > max_len_name:
+            max_len_name = len(i)
+    print(
+        "{:{wight}}".format("Mode", wight=str(max_len_name)),
+        "{:{wight}}".format("Length", wight=str(max_len_name)),
+        "{:{wight}}".format("LastWriteTime", wight=str(max_len_name)),
+        "{:{wight}}".format("Name", wight=str(max_len_name)),
+    )
+    print(
+        "{:{wight}}".format("-" * max_len_name, wight=str(max_len_name)),
+        "{:{wight}}".format("-" * max_len_name, wight=str(max_len_name)),
+        "{:{wight}}".format("-" * max_len_name, wight=str(max_len_name)),
+        "{:{wight}}".format("-" * max_len_name, wight=str(max_len_name)),
+    )
+    for i in list_for_print:
         file_access_right = ""
         if os.path.isfile(i):
             file_access_right += "-"
@@ -72,12 +60,21 @@ def my_ls_l():
                 file_access_right += "-r-xr-x"
         info = os.stat(i)
         print(
-            "\033[34m{:10}  ".format(file_access_right),
-            "{:10}  ".format(info.st_size),
-            "{:10}  ".format(convert_date(info.st_mtime)),
-            "{:10}  ".format(i),
+            "{:<{wight}}".format(file_access_right, wight=str(max_len_name)),
+            "{:<{wight}}".format(info.st_size, wight=str(max_len_name)),
+            "{:<{wight}}".format(convert_date(info.st_mtime), wight=str(max_len_name)),
+            "{:<{wight}}".format(i, wight=str(max_len_name)),
         )
     print()
+
+
+def list_name_for_print(args_all):
+    global list_file
+    if args_all is False:
+        list_file = [i for i in list_file if i[0] != "."]
+        return list_file
+    else:
+        return list_file
 
 
 if __name__ == "__main__":
@@ -104,9 +101,8 @@ if __name__ == "__main__":
     p.add_argument("-v", action="version", help="Version", version="%(prog)s {}".format(VERSION))
     args = p.parse_args()
 
-    if args.all:
-        my_ls_a()
-    elif args.long:
-        my_ls_l()
+    if args.long is True:
+        my_ls_l(list_name_for_print(args.all))
     else:
-        my_ls()
+        for i in list_name_for_print(args.all):
+            print(i)
