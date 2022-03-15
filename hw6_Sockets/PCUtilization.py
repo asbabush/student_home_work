@@ -1,5 +1,6 @@
-import psutil
 import time
+
+import psutil
 
 
 class PCUtilization:
@@ -12,20 +13,26 @@ class PCUtilization:
         self.stop = False
 
     def start_collect(self):
-        with open('Local_log.txt', "w") as f:
+        with open("Local_log.txt", "w") as f:
             while True:
                 if self.stop:
                     break
-                f.write(self.get_current_state() + '\n')
+                f.write(self.get_current_state() + "\n")
                 print(self.get_current_state())
                 time.sleep(1)
 
     def get_current_state(self):
         self.cpu_util = psutil.cpu_percent(interval=1)
         self.memory_util = psutil.virtual_memory().percent
-        self.time = time.strftime('%d %b %Y %H:%M', time.localtime())
-        return self.time + '  CPU utilization:' + str(self.cpu_util) + '%  Memory utilization:' + str(
-            self.memory_util) + '%'
+        self.time = time.strftime("%d %b %Y %H:%M", time.localtime())
+        return (
+            self.time
+            + "  CPU utilization:"
+            + str(self.cpu_util)
+            + "%  Memory utilization:"
+            + str(self.memory_util)
+            + "%"
+        )
 
     def cleanup(self):
         self.cpu_util = None
@@ -42,7 +49,3 @@ if __name__ == "__main__":
     col.start_collect()
     time.sleep(5)
     col.start_collect()
-
-
-
-
