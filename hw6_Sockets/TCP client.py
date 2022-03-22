@@ -1,13 +1,31 @@
 import socket
 import time
+import keyboard
+import threading
 
-from hw6_Sockets.PCUtilization import PCUtilization
+from pc_utilization import PCUtilization
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-sock.connect(("localhost", 9999))
-while True:
-    PCUtil = PCUtilization()
-    print(PCUtil.get_current_state())
-    sock.send(PCUtil.get_current_state().encode("utf-8"))
-    time.sleep(5)
-sock.close()
+
+def connection_server():
+    pc_util = PCUtilization()
+    print("Connected")
+    while True:
+        print(pc_util.get_current_state())
+        sock.send(pc_util.get_current_state().encode("utf-8"))
+        time.sleep(5)
+
+
+if __name__ == '__main__':
+
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(("localhost", 9999))
+    thread_connection_server = threading.Thread(target=connection_server)
+    thread_connection_server.daemon = True
+    thread_connection_server.start()
+
+    while True:
+        if keyboard.is_pressed('q'):
+            print('Stop send and teardown client, because you pushed "q"')
+            break
+    sock.close()
+    print('Disconnected')

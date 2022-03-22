@@ -1,3 +1,2 @@
-socket
-time
-psutil
+psutil 5.9.0
+keyboard 0.13.5
