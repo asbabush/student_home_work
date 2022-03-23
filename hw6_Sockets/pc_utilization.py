@@ -42,10 +42,3 @@ class PCUtilization:
     def stop_collect(self):
         self.stop = True
         self.cleanup()
-
-
-if __name__ == "__main__":
-    col = PCUtilization()
-    col.start_collect()
-    time.sleep(5)
-    col.start_collect()
